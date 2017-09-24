@@ -2,5 +2,5 @@
 	path = godot_headers
 	url = git@github.com:GodotNativeTools/godot_headers.git
 [submodule "godot-cpp"]
-	path = godot-cpp
+	path = cpp_bindings
 	url = git@github.com:GodotNativeTools/godot-cpp.git
