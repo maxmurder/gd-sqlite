@@ -32,9 +32,9 @@ def add_sources(sources, dir, extension):
 
 sources = []
 add_source(sources, "src/init.cpp")
-add_source(sources, "src/gdsqlite.cpp")
+add_source(sources, "src/gd_sqlite.cpp")
 add_sources(sources, "src/sqlite", "c")
 
-library = env.SharedLibrary(target='lib/gdsqlite', source=sources)
+library = env.SharedLibrary(target='lib/gd_sqlite', source=sources)
 Default(library)
 

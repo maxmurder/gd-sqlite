@@ -1,5 +1,5 @@
 #include <Godot.hpp>
-#include <gdsqlite.h>
+#include "gd_sqlite.h"
 
 using namespace godot;
 
@@ -11,5 +11,5 @@ GDNATIVE_TERMINATE(godot_gdnative_terminate_options *options) {
 
 
 NATIVESCRIPT_INIT() {
-    register_class<GDsqlite>();
+    register_class<GDSqlite>();
 }

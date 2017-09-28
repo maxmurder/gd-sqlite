@@ -1,18 +1,20 @@
 #ifndef GDSQLITE_H
 #define GDSQLITE_H
 
-#include "sqlite/sqlite3.h"
-
 #include <core/Godot.hpp>
 #include <Reference.hpp>
-#include <OS.hpp>
 
 using namespace godot;
 
-class GDsqlite : public GodotScript<Reference> { 
+class GDSqlite : public GodotScript<Reference> { 
     GODOT_CLASS(GDSqlite)
 public:
     static void _register_methods();
+    
+    int open(Variant filename, bool bInMemory = false);
+    void close();
+private: 
+    class sqlite3 *db;
 };
 
 #endif
