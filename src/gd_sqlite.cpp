@@ -41,27 +41,20 @@ int GDSqlite::close()
    return sqlite3_close(db);
 }
 
-int GDSqlite::create_table(Variant _name, Variant _columns)
+int GDSqlite::create_table(Variant name, Variant columns)
 {
-    String name = _name;
-    Array columns = _columns;
-    int ret = -1;
+    String _name = name;
+    Array _columns = columns;
     // generate query
-    char query[128];
-    sprintf(query, "CREATE TABLE IF NOT EXISTS `%s` (", name.c_string());
-    for(int itr=0; itr<columns.size(); itr++)
+    char _query[128];
+    sprintf(_query, "CREATE TABLE IF NOT EXISTS `%s` (", _name.c_string());
+    for(int itr=0; itr<_columns.size(); itr++)
     {
-        String column = columns[itr];
-        sprintf(query, "%s%s%s", query, (itr != 0 ? "," : ""), column.c_string());
+        String column = _columns[itr];
+        sprintf(_query, "%s%s%s", _query, (itr != 0 ? "," : ""), column.c_string());
     }
-    sprintf(query, "%s);", query);
-    // compile & execute statement
-    if(prepare(query) == SQLITE_OK)
-    {
-        ret = step();
-        finalize();
-    }
-    return ret;
+    sprintf(_query, "%s);", _query);
+    return query(_query);
 }
 
 int GDSqlite::query(Variant _query)
@@ -115,6 +108,11 @@ Array GDSqlite::query_array( Variant _query )
 String GDSqlite::get_path()
 {
     return path;
+}
+
+String GDSqlite::get_error()
+{
+    return String(sqlite3_errmsg(db));
 }
 
 int GDSqlite::prepare(const char* query)
