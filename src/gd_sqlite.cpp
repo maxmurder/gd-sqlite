@@ -19,10 +19,11 @@ void GDSqlite::close()
     sqlite3_close(db);
 }
 
-String GDSqlite::create_table(Variant _name, Variant _columns)
+int GDSqlite::create_table(Variant _name, Variant _columns)
 {
     String name = _name;
     Array columns = _columns;
+    // Generate query
     char query[128];
     sprintf(query, "CREATE TABLE IF NOT EXISTS `%s` (", name.c_string());
     for(int itr=0; itr<columns.size(); itr++)
@@ -31,7 +32,26 @@ String GDSqlite::create_table(Variant _name, Variant _columns)
         sprintf(query, "%s%s%s", query, (itr != 0 ? "," : ""), column.c_string());
     }
     sprintf(query, "%s);", query);
-    return query;
+    // compile & execute statement
+    int ret = -1;
+    if(prepare_stmt(query) == SQLITE_OK)
+    {
+        ret = step();
+        finalize();
+    }
+    return ret;
+}
+
+int GDSqlite::query(Variant _query)
+{ 
+    int ret = -1;
+    String query = _query;
+    if( prepare_stmt(query.c_string()) == SQLITE_OK )
+    {
+        ret = step();
+        finalize();
+    }
+    return ret;
 }
 
 String GDSqlite::get_path()
@@ -39,10 +59,18 @@ String GDSqlite::get_path()
     return path;
 }
 
-void GDSqlite::_register_methods() 
+int GDSqlite::prepare_stmt(const char* query)
 {
-    register_method((char *)"open", &GDSqlite::open);
-    register_method((char *)"close", &GDSqlite::close);
-    register_method((char *)"create_table", &GDSqlite::create_table);
-    register_method((char *)"get_path", &GDSqlite::get_path);
+    return sqlite3_prepare_v2(db, query, -1, &stmt, NULL);
 }
+
+int GDSqlite::step()
+{
+    return sqlite3_step(stmt);
+}
+
+void GDSqlite::finalize()
+{
+    sqlite3_finalize(stmt);
+}
+
