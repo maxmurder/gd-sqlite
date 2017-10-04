@@ -48,7 +48,7 @@ Final Directory Structure:
 $ scons
 ```
 ### Import GDNative library
-1. Copy contents of `gd-sqlite/lib/` dircetory into `lib/` directory in your 
+1. Copy contents of `gd-sqlite/lib/` into `lib/` directory in your 
    godot project.
 2. Open your project in Godot.
 3. In Godot create GDNativeScript resource: `Create New Resource > GDNativeScript`
