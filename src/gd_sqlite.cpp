@@ -26,10 +26,36 @@
 
 int GDSqlite::open(Variant filename, bool _bInMemory)
 {
+    int ret = -1;
     bInMemory = _bInMemory;
-    path = _bInMemory ? String("file::memory:") : OS::get_data_dir() + String("/") + filename;
-    int ret = sqlite3_open(path.c_string(), &db);
-    if (ret != SQLITE_OK)
+    path = OS::get_data_dir() + String("/") + filename;
+    
+    if(bInMemory)
+    {
+        //Open a link to the on-disk data base
+        sqlite3 *fileDb;
+        if ( sqlite3_open(path.c_string(), &fileDb) == SQLITE_OK )
+        {
+            //Open the in-memory database
+            if ( sqlite3_open("file:memory:", &db) == SQLITE_OK )
+            {
+                // copy database to in memory db
+                sqlite3_backup* backup = sqlite3_backup_init(db, "main", fileDb, "main");
+                if( backup )
+                {
+                    sqlite3_backup_step(backup, -1);
+                    sqlite3_backup_finish(backup);
+                }
+            }
+            // close the link to our file db
+            sqlite3_close(fileDb);
+        }
+    } else
+    {
+        sqlite3_open(path.c_string(), &db);
+    }
+    ret = sqlite3_errcode(db);
+    if(ret != SQLITE_OK)
     {
         printf("[GDSqlite] Error opening database: %s\n", sqlite3_errmsg(db));
     }
@@ -39,6 +65,41 @@ int GDSqlite::open(Variant filename, bool _bInMemory)
 int GDSqlite::close()
 {
    return sqlite3_close(db);
+}
+
+int GDSqlite::backup(Variant _filename)
+{
+    int ret = -1;
+    String filename = _filename;
+    sqlite3* fileDb;
+    sqlite3_backup* backup;
+    
+    // open the output database file
+    if( sqlite3_open(filename.c_string(), &fileDb) == SQLITE_OK)
+    {
+        // create the backup object
+        backup = sqlite3_backup_init(fileDb, "main", db, "main");
+        if(backup)
+        {
+            // copy database pages until backup is complete
+            do {
+                ret = sqlite3_backup_step(backup, 5);
+                //xProgress(
+                //    sqlite3_backup_remaining(backup),
+                //    sqlite3_backup_pagecount(backup)
+                //);
+                if( ret == SQLITE_OK || ret == SQLITE_BUSY || ret == SQLITE_LOCKED )
+                {
+                    sqlite3_sleep(250);
+                }
+            }while ( ret == SQLITE_OK || ret == SQLITE_BUSY || ret == SQLITE_LOCKED );
+            sqlite3_backup_finish(backup);
+        }
+        ret = sqlite3_errcode(fileDb);
+    }
+    // close the output database 
+    sqlite3_close(fileDb);
+    return ret;
 }
 
 int GDSqlite::create_table(Variant name, Variant columns)

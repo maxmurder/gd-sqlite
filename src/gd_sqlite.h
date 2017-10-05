@@ -45,6 +45,8 @@ public:
     /* Closes the currently open database. */
     int close();
     
+    int backup(Variant filename);
+    
     /* Simple query, best used for insertions, deletions etc.
      * @param query     Variant<String>
      *                  SQL query to be executed on database. Follows 
@@ -93,6 +95,7 @@ public:
     {
         register_method((char *)"open", &GDSqlite::open);
         register_method((char *)"close", &GDSqlite::close);
+        register_method((char *)"backup", &GDSqlite::backup);
         register_method((char *)"query", &GDSqlite::query);
         register_method((char *)"query_array", &GDSqlite::query_array);
         register_method((char *)"create_table", &GDSqlite::create_table);
