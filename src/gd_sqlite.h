@@ -42,10 +42,22 @@ public:
      */                
     int open(Variant filename, bool bInMemory = false);
     
-    /* Closes the currently open database. */
+    /* Closes the currently open database. 
+     * @return int      sqlite3 return code.
+     */
     int close();
     
+    /* Backup database to a file on disk.
+     * @param filename  Variant<String>
+     *                  Name of file to write to.
+     * @return int      sqlite3 return code. 
+     */
     int backup(Variant filename);
+    
+    /* Saves an in memory database to disk 
+     * @return int      sqlite3 return code.
+     */
+    int save();
     
     /* Simple query, best used for insertions, deletions etc.
      * @param query     Variant<String>
@@ -75,11 +87,15 @@ public:
      */
     int create_table(Variant name, Variant columns);
     
+    /* Returns true if database is in memory */
+    bool is_in_memory();
+    
     /* Returns the path to the sqlite3 database file. */
     String get_path();
     
     /* Returns latest error message from the sqlite3 database */ 
     String get_error();
+    
     
 private: 
     class sqlite3 *db;
@@ -96,10 +112,13 @@ public:
         register_method((char *)"open", &GDSqlite::open);
         register_method((char *)"close", &GDSqlite::close);
         register_method((char *)"backup", &GDSqlite::backup);
+        register_method((char *)"save", &GDSqlite::save);
         register_method((char *)"query", &GDSqlite::query);
         register_method((char *)"query_array", &GDSqlite::query_array);
         register_method((char *)"create_table", &GDSqlite::create_table);
+        register_method((char *)"is_in_memory", &GDSqlite::is_in_memory);
         register_method((char *)"get_path", &GDSqlite::get_path);
+        register_method((char *)"get_error", &GDSqlite::get_error);
     }
     ~GDSqlite()
     {

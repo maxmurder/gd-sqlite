@@ -24,6 +24,9 @@
 #include "sqlite/sqlite3.h"
 #include <OS.hpp>
 
+int STEP_PAGES = 8;
+int SLEEP_MS = 250;
+
 int GDSqlite::open(Variant filename, bool _bInMemory)
 {
     int ret = -1;
@@ -83,14 +86,10 @@ int GDSqlite::backup(Variant _filename)
         {
             // copy database pages until backup is complete
             do {
-                ret = sqlite3_backup_step(backup, 5);
-                //xProgress(
-                //    sqlite3_backup_remaining(backup),
-                //    sqlite3_backup_pagecount(backup)
-                //);
+                ret = sqlite3_backup_step(backup, STEP_PAGES);
                 if( ret == SQLITE_OK || ret == SQLITE_BUSY || ret == SQLITE_LOCKED )
                 {
-                    sqlite3_sleep(250);
+                    sqlite3_sleep(SLEEP_MS);
                 }
             }while ( ret == SQLITE_OK || ret == SQLITE_BUSY || ret == SQLITE_LOCKED );
             sqlite3_backup_finish(backup);
@@ -102,17 +101,27 @@ int GDSqlite::backup(Variant _filename)
     return ret;
 }
 
+int GDSqlite::save()
+{
+    int ret = -1;
+    if(bInMemory)
+    {
+        ret = backup(path);
+    }
+    return ret;
+}
+
 int GDSqlite::create_table(Variant name, Variant columns)
 {
     String _name = name;
     Array _columns = columns;
     // generate query
     char _query[128];
-    sprintf(_query, "CREATE TABLE IF NOT EXISTS `%s` (", _name.c_string());
+    sprintf(_query, "CREATE TABLE %s (", _name.c_string());
     for(int itr=0; itr<_columns.size(); itr++)
     {
         String column = _columns[itr];
-        sprintf(_query, "%s%s%s", _query, (itr != 0 ? "," : ""), column.c_string());
+        sprintf(_query, "%s%s%s", _query, (itr != 0 ? ", " : ""), column.c_string());
     }
     sprintf(_query, "%s);", _query);
     return query(_query);
@@ -174,6 +183,11 @@ String GDSqlite::get_path()
 String GDSqlite::get_error()
 {
     return String(sqlite3_errmsg(db));
+}
+
+bool GDSqlite::is_in_memory()
+{
+    return bInMemory;
 }
 
 int GDSqlite::prepare(const char* query)
